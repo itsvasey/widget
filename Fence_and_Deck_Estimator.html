@@ -136,6 +136,124 @@
   </style>
 </head>
 <body>
-  <!-- Body content omitted for brevity -->
+  <div class="widget" role="main">
+    <div id="step1" class="step active">
+      <label for="service">What service do you need?</label>
+      <select class="input" id="service">
+        <option value="fence">Fencing</option>
+        <option value="deck">Deck</option>
+      </select>
+      <button class="button" onclick="nextStep(2)">Next</button>
+    </div>
+
+    <div id="step2" class="step">
+      <div id="fence-questions">
+        <label for="fenceType">Fence Type:</label>
+        <select class="input" id="fenceType">
+          <option value="wood">Wood ($30/ft)</option>
+          <option value="vinyl">Vinyl ($45/ft)</option>
+          <option value="chainlink">Chainlink ($25/ft)</option>
+        </select>
+
+        <label for="fenceHeight">Fence Height:</label>
+        <select class="input" id="fenceHeight">
+          <option value="4">4 ft</option>
+          <option value="6" selected>6 ft (standard)</option>
+          <option value="8">8 ft</option>
+        </select>
+
+        <label for="postMaterial">Post Material:</label>
+        <select class="input" id="postMaterial">
+          <option value="wood">Wood (no extra)</option>
+          <option value="metal">Metal (+$10/ft)</option>
+        </select>
+
+        <label for="fenceLength">Length (ft):</label>
+        <input type="number" class="input" id="fenceLength" min="0" />
+
+        <label for="gates">Gates:</label>
+        <input type="number" class="input" id="gates" min="0" value="0" />
+
+        <label for="fenceRemoval">Old Fence Removal?</label>
+        <select class="input" id="fenceRemoval">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <button class="button" onclick="nextStep(3)">Next</button>
+    </div>
+
+    <div id="step3" class="step">
+      <label for="userName">Your Name:</label>
+      <input type="text" class="input" id="userName" required />
+
+      <label for="userPhone">Phone Number:</label>
+      <input type="text" class="input" id="userPhone" required />
+
+      <button class="button" onclick="calculateQuote()">Get My Quote</button>
+    </div>
+
+    <div id="step4" class="step">
+      <div class="output" id="quoteOutput"></div>
+      <div class="quote-summary" id="quoteSummary"></div>
+      <button class="button" onclick="window.print()">Download Quote (PDF)</button>
+    </div>
+  </div>
+
+  <div class="powered-by">Powered by <span>Droply</span></div>
+
+  <script>
+    function nextStep(stepNum) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step' + stepNum).classList.add('active');
+
+      if (stepNum === 2) {
+        const service = document.getElementById('service').value;
+        document.getElementById('fence-questions').style.display = service === 'fence' ? 'block' : 'none';
+      }
+    }
+
+    function calculateQuote() {
+      let total = 0;
+      const service = document.getElementById('service').value;
+      let summaryHTML = '<h3>Quote Summary</h3>';
+
+      if (service === 'fence') {
+        const type = document.getElementById('fenceType').value;
+        const height = parseInt(document.getElementById('fenceHeight').value);
+        const postMaterial = document.getElementById('postMaterial').value;
+        const length = parseInt(document.getElementById('fenceLength').value) || 0;
+        const gates = parseInt(document.getElementById('gates').value) || 0;
+        const removal = document.getElementById('fenceRemoval').value;
+        const prices = { wood: 30, vinyl: 45, chainlink: 25 };
+
+        let pricePerFoot = prices[type];
+        if (height > 6) pricePerFoot += 5;
+        if (postMaterial === 'metal') pricePerFoot += 10;
+
+        total = pricePerFoot * length + (gates * 150);
+        if (removal === 'yes') total += 8 * length;
+
+        summaryHTML += `
+          <p><strong>Name:</strong> ${document.getElementById('userName').value}</p>
+          <p><strong>Phone:</strong> ${document.getElementById('userPhone').value}</p>
+          <p><strong>Service:</strong> Fence</p>
+          <p><strong>Fence Type:</strong> ${type}</p>
+          <p><strong>Height:</strong> ${height} ft</p>
+          <p><strong>Post Material:</strong> ${postMaterial}</p>
+          <p><strong>Length:</strong> ${length} ft</p>
+          <p><strong>Gates:</strong> ${gates}</p>
+          <p><strong>Old Fence Removal:</strong> ${removal}</p>
+          <p><strong>Quote Created At:</strong> ${new Date().toLocaleString()}</p>
+        `;
+      }
+
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step4').classList.add('active');
+      document.getElementById('quoteOutput').textContent = `Estimated Cost: $${total.toLocaleString()} CAD`;
+      document.getElementById('quoteSummary').innerHTML = summaryHTML;
+    }
+  </script>
 </body>
 </html>
